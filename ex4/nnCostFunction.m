@@ -62,11 +62,41 @@ Theta2_grad = zeros(size(Theta2));
 %               and Theta2_grad from Part 2.
 %
 
+% Recode y vector
+I = eye(num_labels);
+Y = zeros(m, num_labels);
+for i=1:m
+  Y(i, :)= I(y(i), :);
+end
 
+% Feedforward first, adding a columnn of 1's to the X matrix
+a1 = [ones(m, 1) X];
+z2 = a1 * Theta1';
+a2 = [ones(size(z2, 1), 1) sigmoid(z2)];
+z3 = a2 * Theta2';
+a3 = sigmoid(z3); % This is our hypothesis i.e. final output layer
 
+% Compute Cost
+J = (sum(sum(-Y.*log(a3) - (1-Y).*log(1-a3))) / m);
 
+% Penalty Term for Regularization
+p = sum(sum(Theta1(:, 2:end).^2, 2)) + sum(sum(Theta2(:, 2:end).^2, 2));
 
+% Calculate Regularized Cost
+J = J + (lambda*p / (2*m));
 
+% Calculate lowercase deltas
+delta3 = a3 - Y;
+delta2 = (delta3*Theta2) .* [ones(m,1); sigmoidGradient(z2)];
+delta2 = delta2(:, 2:end);
+
+% Combine gradients
+Delta1 = delta2(2:end, :)' * a1;
+Delta2 = delta3' *a2;
+
+% Return Gradients
+Theta1_grad = Delta1 / m;
+Theta2_grad = Delta2 / m;
 
 
 
